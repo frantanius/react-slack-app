@@ -33,3 +33,8 @@ export const REGISTER_VALIDATION_SCHEMA = object().shape({
   password: PASSWORD,
   passwordConfirmation: PASSWORD_CONFIRMATION,
 })
+
+export const LOGIN_VALIDATION_SCHEMA = object().shape({
+  email: EMAIL,
+  password: PASSWORD,
+})

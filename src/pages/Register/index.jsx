@@ -1,5 +1,8 @@
 import React from 'react'
+import cx from 'classnames'
 import firebase from 'shared/firebase'
+import md5 from 'md5'
+import { Link } from 'react-router-dom'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { REGISTER_VALIDATION_SCHEMA } from 'shared/utils/validationSchema'
@@ -12,19 +15,31 @@ import {
   Message,
   Icon,
 } from 'semantic-ui-react'
-import { Link } from 'react-router-dom'
+import styles from './styles.module.scss'
 
 const Register = () => {
-  const { control, handleSubmit, errors } = useForm({
+  const { handleSubmit, errors, control } = useForm({
     resolver: yupResolver(REGISTER_VALIDATION_SCHEMA),
   })
 
-  const onSubmit = ({ email, password }) => {
+  const onSubmit = ({ username, email, password }) => {
     firebase
       .auth()
       .createUserWithEmailAndPassword(email, password)
-      .then((user) => {
-        console.log('user', user)
+      .then((newUser) => {
+        newUser.user
+          .updateProfile({
+            displayName: username,
+            photoURL: `http://gravatar.com/avatar/${md5(email)}?d=identicon`,
+          })
+          .then(() => {
+            // storing to the database
+            firebase.database().ref('users').child(newUser.user.uid).set({
+              name: newUser.user.displayName,
+              avatar: newUser.user.photoURL,
+            })
+          })
+          .catch((error) => console.log('error update profile', error))
       })
       .catch((error) => console.log('error', error))
   }
@@ -34,64 +49,70 @@ const Register = () => {
   return (
     <Grid textAlign="center" verticalAlign="middle">
       <Grid.Column style={{ maxWidth: 450 }}>
-        <Header as="h2" iconcolor="orange" textAlign="center">
+        <Header as="h1" iconcolor="orange" textAlign="center">
           <Icon name="puzzle piece" color="orange" />
           Register for DevChat
         </Header>
         <Form size="large" onSubmit={handleSubmit(onSubmit)}>
           <Segment stacked>
             <Controller
-              fluid
               as={Form.Input}
-              defaultValue=""
               control={control}
+              className={cx({ error: username })}
               name="username"
               icon="user"
               iconPosition="left"
               placeholder="Username"
               type="text"
-              className={username && 'error'}
+              defaultValue=""
             />
-            <span>{username && username.message}</span>
+            {username && (
+              <span className={styles.errorMessage}>{username?.message}</span>
+            )}
             <Controller
               as={Form.Input}
-              fluid
               control={control}
-              defaultValue=""
+              className={cx({ error: email })}
               name="email"
               icon="mail"
               iconPosition="left"
               placeholder="Email"
               type="email"
-              className={email && 'error'}
+              defaultValue=""
             />
-            <span>{email && email.message}</span>
+            {email && (
+              <span className={styles.errorMessage}>{email?.message}</span>
+            )}
             <Controller
               as={Form.Input}
-              fluid
               control={control}
-              defaultValue=""
+              className={cx({ error: password })}
               name="password"
               icon="lock"
               iconPosition="left"
               placeholder="Password"
               type="password"
-              className={password && 'error'}
+              defaultValue=""
             />
-            <span>{password && password.message}</span>
+            {password && (
+              <span className={styles.errorMessage}>{password?.message}</span>
+            )}
             <Controller
               as={Form.Input}
-              fluid
               control={control}
-              defaultValue=""
+              className={cx({ error: passwordConfirmation })}
               name="passwordConfirmation"
               icon="repeat"
               iconPosition="left"
-              placeholder="Password confirmation"
+              placeholder="Password Confirmation"
               type="password"
-              className={passwordConfirmation && 'error'}
+              defaultValue=""
             />
-            <span>{passwordConfirmation && passwordConfirmation.message}</span>
+            {passwordConfirmation && (
+              <span className={styles.errorMessage}>
+                {passwordConfirmation?.message}
+              </span>
+            )}
             <Button color="orange" size="large" type="submit" fluid>
               Submit
             </Button>
