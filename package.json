@@ -6,9 +6,6 @@
   "description": "Clone slack app using react and firebase",
   "dependencies": {
     "@hookform/resolvers": "^1.0.0",
-    "@testing-library/jest-dom": "^5.11.4",
-    "@testing-library/react": "^11.1.0",
-    "@testing-library/user-event": "^12.1.10",
     "classnames": "^2.2.6",
     "emoji-mart": "^3.0.0",
     "firebase": "^8.0.0",
@@ -30,21 +27,17 @@
     "semantic-ui-css": "^2.4.1",
     "semantic-ui-react": "^2.0.1",
     "uuid": "^8.3.1",
-    "web-vitals": "^0.2.4",
     "yup": "^0.29.3"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
     "lint": "eslint 'src/**/*.{js,jsx}'",
     "lint:fix": "yarn lint --fix"
   },
   "eslintConfig": {
     "extends": [
-      "react-app",
-      "react-app/jest"
+      "react-app"
     ]
   },
   "browserslist": {
