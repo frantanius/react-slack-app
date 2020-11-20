@@ -1,22 +1,22 @@
-import { useEffect } from 'react'
+// import { useEffect } from 'react'
 import { Route, Switch } from 'react-router-dom'
-import { useHistory } from 'react-router-dom'
-import firebase from 'shared/firebase'
+// import { useHistory } from 'react-router-dom'
+// import firebase from 'shared/firebase'
 import Login from 'pages/Login'
 import Register from 'pages/Register'
 
 const Routes = () => {
-  const history = useHistory()
+  // const history = useHistory()
 
-  useEffect(() => {
-    firebase.auth().onAuthStateChanged((user) => {
-      if (user) {
-        history.push('/')
-      } else {
-        history.push('/login')
-      }
-    })
-  }, [history])
+  // useEffect(() => {
+  //   firebase.auth().onAuthStateChanged((user) => {
+  //     if (user) {
+  //       history.push('/')
+  //     } else {
+  //       history.push('/login')
+  //     }
+  //   })
+  // }, [history])
 
   return (
     <Switch>

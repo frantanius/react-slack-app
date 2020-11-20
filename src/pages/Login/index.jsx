@@ -1,6 +1,8 @@
-import React from 'react'
+import { useEffect, useCallback } from 'react'
 import cx from 'classnames'
-import firebase from 'shared/firebase'
+import { loginRequest } from 'shared/actions/user'
+import { useSelector, useDispatch } from 'react-redux'
+import { userCollection } from 'shared/reducers/user'
 import { Link } from 'react-router-dom'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -17,35 +19,41 @@ import {
 import styles from './styles.module.scss'
 
 const Login = () => {
+  const dispatch = useDispatch()
+  const { errorMessage, isLoading } = useSelector(userCollection)
+
   const { handleSubmit, setError, errors, control } = useForm({
     resolver: yupResolver(LOGIN_VALIDATION_SCHEMA),
   })
 
   const onSubmit = ({ email, password }) => {
-    firebase
-      .auth()
-      .signInWithEmailAndPassword(email, password)
-      .then((user) => {
-        console.log('user', user)
-      })
-      .catch(({ code, message }) => {
-        const content = {
-          ['auth/user-not-found']: {
-            name: 'email',
-            message,
-          },
-          ['auth/wrong-password']: {
-            name: 'password',
-            message,
-          },
-        }[code]
-
-        setError(content.name, {
-          type: 'manual',
-          message: content.message,
-        })
-      })
+    dispatch(loginRequest(email, password))
   }
+
+  const checkIsError = useCallback(() => {
+    if (!errorMessage) return
+    const { code, message } = errorMessage
+
+    const content = {
+      ['auth/user-not-found']: {
+        name: 'email',
+        message,
+      },
+      ['auth/wrong-password']: {
+        name: 'password',
+        message,
+      },
+    }[code]
+
+    setError(content.name, {
+      type: 'manual',
+      message: content.message,
+    })
+  }, [errorMessage, setError])
+
+  useEffect(() => {
+    checkIsError()
+  }, [checkIsError])
 
   const { email, password } = errors
 
@@ -86,7 +94,13 @@ const Login = () => {
             {password && (
               <span className={styles.errorMessage}>{password?.message}</span>
             )}
-            <Button color="violet" size="large" type="submit" fluid>
+            <Button
+              className={cx({ ['loading']: isLoading })}
+              color="violet"
+              size="large"
+              type="submit"
+              fluid
+            >
               Submit
             </Button>
           </Segment>
