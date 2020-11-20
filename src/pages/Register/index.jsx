@@ -1,7 +1,8 @@
-import React from 'react'
+import { useEffect, useCallback } from 'react'
 import cx from 'classnames'
-import firebase from 'shared/firebase'
-import md5 from 'md5'
+import { registerRequest } from 'shared/actions/user'
+import { userCollection } from 'shared/reducers/user'
+import { useSelector, useDispatch } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -18,31 +19,37 @@ import {
 import styles from './styles.module.scss'
 
 const Register = () => {
-  const { handleSubmit, errors, control } = useForm({
+  const dispatch = useDispatch()
+  const { errorMessage, isLoading } = useSelector(userCollection)
+
+  const { handleSubmit, setError, errors, control } = useForm({
     resolver: yupResolver(REGISTER_VALIDATION_SCHEMA),
   })
 
   const onSubmit = ({ username, email, password }) => {
-    firebase
-      .auth()
-      .createUserWithEmailAndPassword(email, password)
-      .then((newUser) => {
-        newUser.user
-          .updateProfile({
-            displayName: username,
-            photoURL: `http://gravatar.com/avatar/${md5(email)}?d=identicon`,
-          })
-          .then(() => {
-            // storing to the database
-            firebase.database().ref('users').child(newUser.user.uid).set({
-              name: newUser.user.displayName,
-              avatar: newUser.user.photoURL,
-            })
-          })
-          .catch((error) => console.log('error update profile', error))
-      })
-      .catch((error) => console.log('error', error))
+    dispatch(registerRequest(username, email, password))
   }
+
+  const checkIsError = useCallback(() => {
+    if (!errorMessage) return
+    const { code, message } = errorMessage
+
+    const content = {
+      ['auth/email-already-in-use']: {
+        name: 'email',
+        message,
+      },
+    }[code]
+
+    setError(content.name, {
+      type: 'manual',
+      message: content.message,
+    })
+  }, [errorMessage, setError])
+
+  useEffect(() => {
+    checkIsError()
+  }, [checkIsError])
 
   const { username, email, password, passwordConfirmation } = errors
 
@@ -113,7 +120,13 @@ const Register = () => {
                 {passwordConfirmation?.message}
               </span>
             )}
-            <Button color="orange" size="large" type="submit" fluid>
+            <Button
+              className={cx({ loading: isLoading })}
+              color="orange"
+              size="large"
+              type="submit"
+              fluid
+            >
               Submit
             </Button>
           </Segment>

@@ -11,17 +11,20 @@ const initalState = {
 const userReducer = (state = initalState, action) => {
   switch (action.type) {
     case userTypes.LOGIN_REQUEST:
+    case userTypes.REGISTER_REQUEST:
       return {
         ...state,
         isLoading: true,
       }
     case userTypes.LOGIN_SUCCESS:
+    case userTypes.REGISTER_SUCCESS:
       return {
         ...state,
         isLoading: false,
         payload: action.payload,
       }
     case userTypes.LOGIN_FAILURE:
+    case userTypes.REGISTER_FAILURE:
       return {
         ...state,
         isLoading: false,
